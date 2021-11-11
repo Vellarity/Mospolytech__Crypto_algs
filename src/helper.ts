@@ -23,3 +23,25 @@ export const power = (a:number,b:number,p:number) =>{
     return (Math.pow(a, b) % p)
   }
 }
+
+export const isCompire = (a:number, b:number) =>{
+  let num:number
+  while(b){
+    num = a % b
+    a = b
+    b = num
+  }
+  if (Math.abs(a) == 1) {
+    return true;
+  }
+  return false;
+}
+
+export const isSimple = (a:number) =>{
+  for (let i=0; i<a; i++){
+    if (a%i === 0){
+      return false
+    }
+    return true
+  }
+}
