@@ -30,3 +30,28 @@ export const VernamDec = (text:string, key:string[], alphabet:string, n:number) 
   }
   return result
 }
+
+/* const n:number = ALPHABET.length
+const alphabet:string = ALPHABET + ALPHABET
+const text:string = PrepareText(TEXT,false);
+const key:string[] = GenerateKey(text.length, ALPHABET.length);
+const resultEn:string = VernamEn(text,key,ALPHABET,n)
+
+console.log(
+  {"encrypted": resultEn,
+  "key": key,}
+)
+
+const enText:string = 'ООСЫХТДЛФКБСДЛЗСАБВБХКВАЩБШЯВЕЮПОЕНПГИЗБЙЕЫЕОМ'
+const enKey:string[] = [
+  'Д', 'Ь', 'Г', 'Ж', 'З', 'Ы', 'Я', 'Щ',
+  'М', 'Э', 'Ы', 'Й', 'Ф', 'Г', '',  'Ж',
+  'Ы', 'Т', 'Э', 'Ъ', 'Ж', 'Ш', 'У', 'Н',
+  'И', 'П', 'Ь', 'Ш', 'В', 'Ъ', 'Щ', 'И',
+  'О', '',  'Ы', 'В', 'Г', 'Д', 'В', 'С',
+  'Д', 'Г', 'Н', 'У', 'Ч', 'В'
+]
+
+const resultDec:string = VernamDec(enText,enKey,alphabet,n)
+
+console.log(resultDec) */

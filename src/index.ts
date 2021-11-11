@@ -1,28 +1,15 @@
 import { ALPHABET, TEXT } from "./helper";
-import {PrepareText} from './helper'
+import {PrepareText, power} from './helper'
 import {GenerateKey, VernamEn, VernamDec} from './algs/vernam'
+import {diffieHellman} from './algs/diffie-hellman'
 
-const n:number = ALPHABET.length
-const alphabet:string = ALPHABET + ALPHABET
-const text:string = PrepareText(TEXT,false);
-const key:string[] = GenerateKey(text.length, ALPHABET.length);
-const resultEn:string = VernamEn(text,key,ALPHABET,n)
+let result = new Array(2)
 
-console.log(
-  {"encrypted": resultEn,
-  "key": key,}
-)
+let P:number = 20 // большее число
+let G:number = 5 // меньшее число
+let a:number = 15 // ключ Элис
+let b:number = 4 // ключ Боба
 
-const enText:string = 'ЧМШФФФКРЗРСЪВКЮЙКБЭЧИСЦШЪЭЬДАДЪАЖЗПООРЮЪОЯМУЗЪ'
-const enKey:string[] = [
-  'Н', 'Ъ', 'К', 'Я', 'Ж', 'Э', 'Е', 'Ю',
-  'Я', 'Г', 'Л', 'Т', 'Т', 'В', 'Ч', 'Ю',
-  'Е', 'Т', 'Ш', 'Р', 'Щ', 'Я', 'З', 'Е',
-  'Й', 'Л', '',  'Э', '',  'Щ', 'Х', 'Щ',
-  'Ж', 'В', 'Э', 'Б', 'О', 'М', 'Щ', 'К',
-  'Й', 'Э', 'Ю', 'Б', 'Р', 'Р'
-]
+result = diffieHellman(P,G,a,b)
 
-const resultDec:string = VernamDec(enText,enKey,alphabet,n)
-
-console.log(resultDec)
+console.log(result)

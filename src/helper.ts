@@ -14,3 +14,12 @@ export const PrepareText = (text:string, isDots: boolean) => {
 export const getRandomArbitrary = (min:number, max:number) => {
   return Math.random() * (max - min) + min;
 }
+
+export const power = (a:number,b:number,p:number) =>{
+  if (b===1){
+    return 1
+  }
+  else{
+    return (Math.pow(a, b) % p)
+  }
+}
