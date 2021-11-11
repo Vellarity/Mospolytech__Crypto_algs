@@ -5,11 +5,11 @@ import {diffieHellman} from './algs/diffie-hellman'
 
 let result
 
-let P:number = 25 // большее число
-let G:number = 7 // меньшее число
-let a:number = 14 // ключ Элис
-let b:number = 12 // ключ Боба
+let n:bigint = 47n // большее число
+let a:bigint = 5n // меньшее число
+let A:bigint = 6n // ключ Элис
+let B:bigint = 15n // ключ Боба
 
-result = diffieHellman(P,G,a,b)
+result = diffieHellman(n,a,A,B)
 
 console.log(result)

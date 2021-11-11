@@ -15,33 +15,33 @@ export const getRandomArbitrary = (min:number, max:number) => {
   return Math.random() * (max - min) + min;
 }
 
-export const power = (a:number,b:number,p:number) =>{
-  if (b===1){
-    return 1
+export const power = (a:bigint,b:bigint,p:bigint) =>{
+  if (b===1n){
+    return BigInt(1)
   }
   else{
-    return (Math.pow(a, b) % p)
+    return BigInt(a ** b % p)
   }
 }
 
-export const isCompire = (a:number, b:number) =>{
-  let num:number
+export const isCompire = (a:bigint, b:bigint) =>{
+  let num:bigint
   while(b){
     num = a % b
     a = b
     b = num
   }
-  if (Math.abs(a) == 1) {
+  if (a == 1n) {
     return true;
   }
   return false;
 }
 
-export const isSimple = (a:number) =>{
-  for (let i=0; i<a; i++){
-    if (a%i === 0){
-      return false
+export const isSimple = (a:bigint) =>{
+  for (let i=1n; i<a; i++){
+    if (a % i === 0n){
+      return true
     }
-    return true
+    return false
   }
 }
