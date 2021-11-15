@@ -1,6 +1,6 @@
-import { ALPHABET } from "../helper"
+import { ALPHABET } from "../helper/globals"
 
-import { getRandomArbitrary } from "../helper"
+import { getRandomArbitrary } from "../helper/helper"
 
 export const GenerateKey = (keyLen:number, alphabetLen:number) =>{
   let key:string[] = new Array(keyLen)

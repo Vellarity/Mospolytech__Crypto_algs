@@ -1,7 +1,3 @@
-export const ALPHABET:string = "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
-
-export const TEXT:string = "Кто хочет инжир из лепе, пусть залезает на дерево.";
-
 export const PrepareText = (text:string, isDots: boolean) => {
   if (!isDots){
     text = text.replace(/,/g,'ЗПТ').split(" ").join('');

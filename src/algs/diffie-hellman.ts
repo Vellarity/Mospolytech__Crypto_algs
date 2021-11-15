@@ -1,4 +1,4 @@
-import { power, isCompire, isSimple } from "../helper";
+import { power, isCompire, isSimple } from "../helper/helper";
 
 export const diffieHellman = (n:bigint,a:bigint,A:bigint,B:bigint) =>{
   // P - основное число, простое
@@ -24,13 +24,13 @@ export const diffieHellman = (n:bigint,a:bigint,A:bigint,B:bigint) =>{
   console.log(`Yb: ${Yb}`)
   
   // Генерируем на основе промежуточных ключей секретные
-  let Ka:bigint = BigInt(power(Yb, A, n)); // Секретный ключ для Элис
-  let Kb:bigint = BigInt(power(Ya, B, n)); // Секретный ключ для Боба
+  let Ka:bigint = power(Yb, A, n); // Секретный ключ для Элис
+  let Kb:bigint = power(Ya, B, n); // Секретный ключ для Боба
 
-  /* if (!(Ka in [0,1])){
+  if ((Ka.toString() in ["0","1"])){
     console.log("Ошибка: Ключ не может равняться 1 или 0")
     return 1
-  } */
+  }
 
   return [Ka, Kb]
 }
