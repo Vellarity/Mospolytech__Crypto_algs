@@ -1,7 +1,6 @@
-export const toBinary = (plain:string) =>{
+export const toBinary = (plain:string) =>{ //Перевод текста в двоичный формат UTF-8
   const encoder = new TextEncoder()
   const view = encoder.encode(plain)
-  /* console.log(view) */
   let bytesTemp = []
 
   for (let i=0; i < view.length; i++) {
@@ -22,7 +21,7 @@ export const toBinary = (plain:string) =>{
   return bytes
 }
 
-export const binToStr = (bits:any) =>{
+export const binToStr = (bits:any) =>{ //Перевод двоичной последовательности в UTF-8 строку
   const decoder = new TextDecoder()
   let chunkSize = 8
   let chunk:any=''
@@ -34,6 +33,5 @@ export const binToStr = (bits:any) =>{
   }
 
   let uMassive = Uint8Array.from(massive)
-  /* console.log(uMassive) */
   return decoder.decode(uMassive)
 }

@@ -1,52 +1,48 @@
 import {binToStr, toBinary} from '../helper/binary'
+const _  = require('lodash')
 
 const REG_X_LENGTH = 19
 const REG_Y_LENGTH = 22
 const REG_Z_LENGTH = 23
 
-let keyOne = ""
 let regX:number[] = []
 let regY:number[] = []
 let regZ:number[] = []
 
-
 const loadRegisters = (key:string) =>{
+  //Загрузка регистров на основе введённого пользователем ключа
+
   let i:number = 0
   while (i < REG_X_LENGTH) {
-    regX.splice(i,0,Number(key[i]))
-    i++
+    regX.push(Number(key[i]))
+    i = i + 1
   }
 
   let j:number = 0
   let p:number = REG_X_LENGTH
   while (j < REG_Y_LENGTH){
-    regY.splice(j,0,Number(key[p]))
-    p++
-    j++
+    regY.push(Number(key[p]))
+    p = p + 1
+    j = j + 1
   }
 
   let k:number = REG_Y_LENGTH + REG_X_LENGTH
   let r:number = 0
   while (r < REG_Z_LENGTH){
-    regZ.splice(r,0,Number(key[k]))
-    k++
-    r++
+    regZ.push(Number(key[k]))
+    k = k + 1
+    r = r + 1
   }
 }
 
 const setKey = (key:string) => {
+  //Запускает функции установки регистров, если ключ удовлетворяет требованиям
+
   if (key.length === 64 && key.match(/^([01])+/)){
-    keyOne = key
     loadRegisters(key)
     return true
   }
   return false
-}
-
-let key = setKey("0101001000011010110001110001100100101001000000110111111010110111")
-
-const getKey = () =>{
-  return keyOne
 }
 
 const getMajority = (x:number,y:number,z:number) =>{
@@ -57,9 +53,11 @@ const getMajority = (x:number,y:number,z:number) =>{
 }
 
 const getKeystream = (length:number) =>{
-  let regX_temp:number[] = JSON.parse(JSON.stringify(regX))
-  let regY_temp:number[] = JSON.parse(JSON.stringify(regY))
-  let regZ_temp:number[] = JSON.parse(JSON.stringify(regZ))
+  //Получение ключевого потока при помощи операции XOR над соотвествующими элементами регистров
+
+  let regX_temp:number[] = _.cloneDeep(regX)
+  let regY_temp:number[] = _.cloneDeep(regY)
+  let regZ_temp:number[] = _.cloneDeep(regZ)
 
   let keyStream:any[] = []
 
@@ -70,61 +68,62 @@ const getKeystream = (length:number) =>{
 
     if (regX_temp[8] === majority){
       let newI = regX_temp[13] ^ regX_temp[16] ^ regX_temp[17] ^ regX_temp[18]
-      let regX_temp_two = JSON.parse(JSON.stringify(regX_temp))
+      let regX_temp_two = _.cloneDeep(regX_temp)
       let j:number = 1
       while (j < regX_temp.length){
         regX_temp[j] = regX_temp_two[j - 1]
-        j++
+        j = j + 1 
       }
       regX_temp_two = newI
     }
 
-    if (regY_temp[10] == majority){
+    if (regY_temp[10] === majority){
       let newOne = regY_temp[20] ^ regY_temp[21]
-      let regY_temp_two = JSON.parse(JSON.stringify(regY_temp))
+      let regY_temp_two = _.cloneDeep(regY_temp)
       let k = 1
       while (k < regY_temp.length){
         regY_temp[k] = regY_temp_two[k - 1]
-        k++
+        k = k + 1
       }
       regY_temp[0] = newOne          
     }
 
-    if (regZ_temp[10] == majority){
+    if (regZ_temp[10] === majority){
       let newTwo = regZ_temp[7] ^ regZ_temp[20] ^ regZ_temp[21] ^ regZ_temp[22]
-      let regZ_temp_two = JSON.parse(JSON.stringify(regZ_temp))
+      let regZ_temp_two = _.cloneDeep(regZ_temp)
       let m = 1
       while (m < regZ_temp.length){
         regZ_temp[m] = regZ_temp_two[m - 1]
-        m++
+        m = m + 1
       }
       regZ_temp[0] = newTwo
     }
 
-    keyStream.splice(i, 0, regX_temp[18] ^ regY_temp[21] ^ regZ_temp[22])
-    i++
+    keyStream.push(regX_temp[18] ^ regY_temp[21] ^ regZ_temp[22])
+    i = i + 1
   }
   return keyStream
 }
 
-const enc = (plain:string) =>{
-  key = setKey("0101001000011010110001110001100100101001000000110111111010110111")
+const enc = (plain:string, key:boolean) =>{
+  //Функция шифрования, получает на вход строку, конвертирует её, получает ключевой поток при помощи перечисленных выше функций и производит операцию XOR над элементами текста и ключевого потока
 
   let s:string = ''
 
   let binary = toBinary(plain)
   let keyStream = getKeystream(binary.length)
+  console.log(binary, "|", keyStream)
   let i:number = 0
   while (i < binary.length){
-    s += (binary[i] ^ keyStream[i]).toString()
+    s+=(binary[i] ^ keyStream[i]).toString()
     i++
   }
 
   return s
 }
 
-const dec = (cipher:string) =>{
-  key = setKey("0101001000011010110001110001100100101001000000110111111010110111")
+const dec = (cipher:string, key:boolean) =>{
+  //Функция расшифрования, получает на вход двочиную строку шифра и ключ, получает ключевой поток на основе ключа, производит операцию XOR над элементами шифра и ключа. Результат конвертируется в UTF-8 строку
 
   let s = ""
   let binary:any[] = []
@@ -141,5 +140,11 @@ const dec = (cipher:string) =>{
 }
 
 
-console.log(enc("Привет, Андрей!"))
-console.log(dec('010010000001001000110100111001100001110111101011100001110100110011111111010101000011100111010111100100000110010101001001111101110101111100011011001010010001110001011010010001011001010011010010110000010111001101111000'))
+console.log(enc(`Дом`, 
+setKey('0101001000011010110001110001100100101001000000110111111010110111')))
+
+console.log(dec(
+  enc(`Дом`, setKey('0101001000011010110001110001100100101001000000110111111010110111')), 
+  setKey('0101001000011010110001110001100100101001000000110111111010110111')
+  )
+)

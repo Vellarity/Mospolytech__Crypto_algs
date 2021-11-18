@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "ts-node ./src/algs/a51.ts",
+    "start": "ts-node ./src/algs/diffie-hellman.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -17,6 +17,7 @@
     "typescript": "^4.4.4"
   },
   "dependencies": {
+    "lodash": "^4.17.21",
     "node-gost-crypto": "^1.0.2"
   }
 }

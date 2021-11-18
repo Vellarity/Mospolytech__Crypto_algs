@@ -32,5 +32,16 @@ export const diffieHellman = (n:bigint,a:bigint,A:bigint,B:bigint) =>{
     return 1
   }
 
-  return [Ka, Kb]
+  return {Ka:Ka, Kb:Kb}
 }
+
+let result
+
+let n:bigint = 237n // большее число
+let a:bigint = 5n // меньшее число
+let A:bigint = 6n // ключ Элис
+let B:bigint = 15n // ключ Боба
+
+result = diffieHellman(n,a,A,B)
+
+console.log(result)
