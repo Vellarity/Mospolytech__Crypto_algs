@@ -1,3 +1,5 @@
+import { bint, num } from "../types";
+
 export const PrepareText = (text:string, isDots: boolean) => {
   if (!isDots){
     text = text.replace(/,/g,'ЗПТ').split(" ").join('');
@@ -7,16 +9,26 @@ export const PrepareText = (text:string, isDots: boolean) => {
   return text.toUpperCase().split('').join('');
 }
 
-export const getRandomArbitrary = (min:number, max:number) => {
-  return Math.random() * (max - min) + min;
+export const getRandomArbitrary = (min:number, max:number):num|bint => {
+  return Math.floor(Math.random() * (max - min) + min);
 }
 
-export const power = (a:bigint,b:bigint,p:bigint) =>{
-  if (b===1n){
-    return BigInt(1)
+export const power = (a:any,b:any,p:any) =>{
+  if (typeof(b) === 'bigint' || typeof(p) === 'bigint'){
+    if (b===1n){
+      return 1n
+    }
+    else{
+      return BigInt(a) ** BigInt(b) % BigInt(p)
+    }
   }
-  else{
-    return BigInt(a ** b % p)
+  else {
+    if (b===1){
+      return 1
+    }
+    else{
+      return Number(a) ** Number(b) % Number(p)
+    }
   }
 }
 
@@ -33,9 +45,9 @@ export const isCompire = (a:bigint, b:bigint) =>{
   return false;
 }
 
-export const isSimple = (a:bigint) =>{
+export const isSimple = (a:bint|num) =>{
   for (let i=1n; i<a; i++){
-    if (a % i === 0n){
+    if (BigInt(a) % i === 0n){
       return true
     }
     return false

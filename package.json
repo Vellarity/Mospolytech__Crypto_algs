@@ -17,7 +17,9 @@
     "typescript": "^4.4.4"
   },
   "dependencies": {
+    "colors": "^1.4.0",
     "lodash": "^4.17.21",
+    "mathjs": "^10.0.0",
     "node-gost-crypto": "^1.0.2"
   }
 }
