@@ -1,4 +1,4 @@
-import { str, num } from "../types";
+import { str, num, bint, BN , NB } from "../types";
 
 export const textToNums = (plainText:str, alphabet:str):num[] =>{
   let indexes:num[] = []
@@ -10,11 +10,11 @@ export const textToNums = (plainText:str, alphabet:str):num[] =>{
   return indexes
 }
 
-export const numsToText = (indexes:num[], alphabet:str):str =>{
+export const numsToText = (indexes:bint[]|num[], alphabet:str):str =>{
   let plainText:str = ''
 
   indexes.forEach(item =>{
-    plainText += alphabet.charAt(item - 1)
+    plainText += alphabet.charAt(BN(NB(item) - 1n))
   })
 
   return plainText
@@ -25,7 +25,8 @@ export const clearText = (text:str, isDots:boolean) =>{
     ',':'ЗПТ',
     '.':'ТЧК',
     '-':'ТИРЭ',
-    ';':'ТЧКИЗПТ'
+    ';':'ТЧКИЗПТ',
+    ':':'ДВТЧ',
   }
 
   if (!isDots){

@@ -1,4 +1,4 @@
-import { bint, num } from "../types";
+import { bint, num, NB } from "../types";
 
 export const PrepareText = (text:string, isDots: boolean) => {
   if (!isDots){
@@ -9,8 +9,8 @@ export const PrepareText = (text:string, isDots: boolean) => {
   return text.toUpperCase().split('').join('');
 }
 
-export const getRandomArbitrary = (min:number, max:number):num|bint => {
-  return Math.floor(Math.random() * (max - min) + min);
+export const getRandomArbitrary = (min:number, max:number):bint => {
+  return NB(Math.floor(Math.random() * (max - min) + min));
 }
 
 export const power = (a:any,b:any,p:any) =>{
