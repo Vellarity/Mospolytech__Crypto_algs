@@ -1,3 +1,4 @@
+import { deepEqual } from 'assert';
 import {mulBy02, mulBy03, mulBy09, mulBy0b, mulBy0d, mulBy0e, leftShift, rightShift} from '../helper/AESfunc.js'
 
 const sBox = [
@@ -37,7 +38,6 @@ const invSbox = [
   0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
   0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D,
 ]
-
 
 // rCon is Round Constant used for the Key Expansion [1st col is 2^(r-1) in GF(2^8)] [§5.2]
 const rCon = [
@@ -82,41 +82,6 @@ const invShiftRows = (s, Nb) => {
   return s;  
 }
 
-/* const xTime = (a) => a&0x80 ? (a<<1) ^ 0x011b : a<<1
-
-const mixColumns = (s, Nb) => {
-  for (let c=0; c<Nb; c++) {
-    const a = new Array(Nb);  // 'a' is a copy of the current column from 's'
-    const b = new Array(Nb);  // 'b' is a•{02} in GF(2^8)
-    for (let r=0; r<4; r++) {
-        a[r] = s[r][c];
-        b[r] = s[r][c]&0x80 ? s[r][c]<<1 ^ 0x011b : s[r][c]<<1;
-    }
-    // a[n] ^ b[n] is a•{03} in GF(2^8)
-    s[0][c] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3]; // {02}•a0 + {03}•a1 + a2 + a3
-    s[1][c] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3]; // a0 • {02}•a1 + {03}•a2 + a3
-    s[2][c] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3]; // a0 + a1 + {02}•a2 + {03}•a3
-    s[3][c] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3]; // {03}•a0 + a1 + a2 + {02}•a3
-  }
-  return s;
-} */
-/* const invMixColumns = (s, Nb) =>{
-  for (let c=0; c<Nb; c++) {
-    const a = new Array(Nb);  // 'a' is a copy of the current column from 's'
-    const b = new Array(Nb);  // 'b' is a•{02} in GF(2^8)
-    for (let r=0; r<4; r++) {
-        a[r] = s[r][c];
-        b[r] = s[r][c]&0x80 ? s[r][c]<<1 ^ 0x011b : s[r][c]<<1;
-    }
-    // a[n] ^ b[n] is a•{03} in GF(2^8)
-    s[0][c] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3]; // {02}•a0 + {03}•a1 + a2 + a3
-    s[1][c] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3]; // a0 • {02}•a1 + {03}•a2 + a3
-    s[2][c] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3]; // a0 + a1 + {02}•a2 + {03}•a3
-    s[3][c] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3]; // {03}•a0 + a1 + a2 + {02}•a3
-  }
-  return s;
-} */
-
 const mixColumns = (s, Nb) =>{
   for(let i = 0; i<Nb; i++){
     const s0 = mulBy02(s[0][i])^mulBy03(s[1][i])^s[2][i]^s[3][i]
@@ -144,11 +109,11 @@ const invMixColumns = (s, Nb) =>{
   return s
 }
 
-const addRoundKey = (state, w, rnd, Nb) => {
+const addRoundKey = (s, w, rnd, Nb) => {
   for (let r=0; r<4; r++) {
-      for (let c=0; c<Nb; c++) state[r][c] ^= w[rnd*4+c][r];
+      for (let c=0; c<Nb; c++) s[r][c] ^= w[rnd*4+c][r];
   }
-  return state;
+  return s;
 }
 
 const subWord = (w) => {
@@ -250,12 +215,18 @@ const decryptBlock = (input, w) =>{
   return output;
 }
 
+
+const encryptCBC = (input,password,iv) =>{
+  deepEqual(iv.length,16)
+
+  input = input
+}
+
+
 const plainText = [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF]
 const key = [0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f]
 
 let result = encryptBlock(plainText,keyExpansion(key))
-
-
 
 console.log(result)
 

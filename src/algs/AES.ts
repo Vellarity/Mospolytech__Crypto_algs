@@ -1,26 +1,30 @@
-import assert from "assert"
-import { num, str } from "../types"
+import assert from 'assert';
+import { pbkdf2Sync, randomBytes } from 'crypto';
+import {mulBy02, mulBy03, mulBy09, mulBy0b, mulBy0d, mulBy0e, leftShift, rightShift, addPad, removePad, xorMass} from '../helper/AESfunc'
+import { fromUTF8, toUTF8 } from '../helper/binary';
+import { BIGTEXTVAR1, TEXT1000VAR1 } from '../helper/globals';
+import { num, str } from '../types.js';
 
-const SBOX = [
-  0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
-  0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
-  0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC, 0x34, 0xA5, 0xE5, 0xF1, 0x71, 0xD8, 0x31, 0x15,
-  0x04, 0xC7, 0x23, 0xC3, 0x18, 0x96, 0x05, 0x9A, 0x07, 0x12, 0x80, 0xE2, 0xEB, 0x27, 0xB2, 0x75,
-  0x09, 0x83, 0x2C, 0x1A, 0x1B, 0x6E, 0x5A, 0xA0, 0x52, 0x3B, 0xD6, 0xB3, 0x29, 0xE3, 0x2F, 0x84,
-  0x53, 0xD1, 0x00, 0xED, 0x20, 0xFC, 0xB1, 0x5B, 0x6A, 0xCB, 0xBE, 0x39, 0x4A, 0x4C, 0x58, 0xCF,
-  0xD0, 0xEF, 0xAA, 0xFB, 0x43, 0x4D, 0x33, 0x85, 0x45, 0xF9, 0x02, 0x7F, 0x50, 0x3C, 0x9F, 0xA8,
-  0x51, 0xA3, 0x40, 0x8F, 0x92, 0x9D, 0x38, 0xF5, 0xBC, 0xB6, 0xDA, 0x21, 0x10, 0xFF, 0xF3, 0xD2,
-  0xCD, 0x0C, 0x13, 0xEC, 0x5F, 0x97, 0x44, 0x17, 0xC4, 0xA7, 0x7E, 0x3D, 0x64, 0x5D, 0x19, 0x73,
-  0x60, 0x81, 0x4F, 0xDC, 0x22, 0x2A, 0x90, 0x88, 0x46, 0xEE, 0xB8, 0x14, 0xDE, 0x5E, 0x0B, 0xDB,
-  0xE0, 0x32, 0x3A, 0x0A, 0x49, 0x06, 0x24, 0x5C, 0xC2, 0xD3, 0xAC, 0x62, 0x91, 0x95, 0xE4, 0x79,
-  0xE7, 0xC8, 0x37, 0x6D, 0x8D, 0xD5, 0x4E, 0xA9, 0x6C, 0x56, 0xF4, 0xEA, 0x65, 0x7A, 0xAE, 0x08,
-  0xBA, 0x78, 0x25, 0x2E, 0x1C, 0xA6, 0xB4, 0xC6, 0xE8, 0xDD, 0x74, 0x1F, 0x4B, 0xBD, 0x8B, 0x8A,
-  0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
-  0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
-  0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
-]
+const sBox = [
+  0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+  0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
+  0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
+  0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75,
+  0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84,
+  0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf,
+  0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8,
+  0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2,
+  0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73,
+  0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb,
+  0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79,
+  0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08,
+  0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a,
+  0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
+  0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
+  0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
+];
 
-const INVSBOX = [
+const invSbox = [
   0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
   0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB,
   0x54, 0x7B, 0x94, 0x32, 0xA6, 0xC2, 0x23, 0x3D, 0xEE, 0x4C, 0x95, 0x0B, 0x42, 0xFA, 0xC3, 0x4E,
@@ -36,215 +40,266 @@ const INVSBOX = [
   0x1F, 0xDD, 0xA8, 0x33, 0x88, 0x07, 0xC7, 0x31, 0xB1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xEC, 0x5F,
   0x60, 0x51, 0x7F, 0xA9, 0x19, 0xB5, 0x4A, 0x0D, 0x2D, 0xE5, 0x7A, 0x9F, 0x93, 0xC9, 0x9C, 0xEF,
   0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
-  0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
+  0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D,
 ]
-
-const subBytes = (s:any) =>{
-  for (let i=0;i<4;i++){
-    for (let j=0;j<4;j++){
-      s[i][j] = SBOX[s[i][j]]
-    }
-  }
-}
-
-const invSubBytes = (s:any) =>{
-  for (let i=0;i<4;i++){
-    for (let j=0;j<4;j++){
-      s[i][j] = INVSBOX[s[i][j]]
-    }
-  }
-}
-
-const shiftRows = (s:any) =>{
-  [s[0][1], s[1][1], s[2][1], s[3][1]] = [s[1][1], s[2][1], s[3][1], s[0][1]]
-  [s[0][2], s[1][2], s[2][2], s[3][2]] = [s[2][2], s[3][2], s[0][2], s[1][2]]
-  [s[0][3], s[1][3], s[2][3], s[3][3]] = [s[3][3], s[0][3], s[1][3], s[2][3]]
-}
-
-const invShiftRows = (s:any) =>{
-  [s[0][1], s[1][1], s[2][1], s[3][1]] = [s[3][1], s[0][1], s[1][1], s[2][1]]
-  [s[0][2], s[1][2], s[2][2], s[3][2]] = [s[2][2], s[3][2], s[0][2], s[1][2]]
-  [s[0][3], s[1][3], s[2][3], s[3][3]] = [s[1][3], s[2][3], s[3][3], s[0][3]]
-}
-
-const addRoundKey = (s:any,k:any) =>{
-  for (let i=0;i<4;i++){
-    for (let j=0;j<4;j++){
-      s[i][j] ^= k[i][j]
-    }
-  }
-}
-
-const xTime = (a:any) => {
-  if (a & 0x80){return (((a << 1) ^ 0x1B) & 0xFF)} else {return (a << 1)}
-}
-
-const mixSingleColumn = (a:any) =>{
-  let t = a[0] ^ a[1] ^ a[2] ^ a[3]
-  let u = a[0]
-  a[0] ^= t ^ xTime(a[0] ^ a[1])
-  a[1] ^= t ^ xTime(a[1] ^ a[2])
-  a[2] ^= t ^ xTime(a[2] ^ a[3])
-  a[3] ^= t ^ xTime(a[3] ^ u)
-}
-
-const mixColumns = (s:any, i:num = 0):any =>{
-  if (i < 4){
-    mixSingleColumn(s[i])
-    return mixColumns(s,i+1)
-  }
-}
-
-const invMixColumns = (s:any) =>{
-  for (let i = 0; i<4; i++){
-    let u = xTime(xTime(s[i][0] ^ s[i][2]))
-    let v = xTime(xTime(s[i][1] ^ s[i][3]))
-    s[i][0] ^= u
-    s[i][1] ^= v
-    s[i][2] ^= u
-    s[i][3] ^= v
-  }
-  mixColumns(s)
-}
-
+// rCon is Round Constant used for the Key Expansion [1st col is 2^(r-1) in GF(2^8)] [§5.2]
 const rCon = [
-  0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40,
-  0x80, 0x1B, 0x36, 0x6C, 0xD8, 0xAB, 0x4D, 0x9A,
-  0x2F, 0x5E, 0xBC, 0x63, 0xC6, 0x97, 0x35, 0x6A,
-  0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39,
-]
+  [ 0x00, 0x00, 0x00, 0x00 ],
+  [ 0x01, 0x00, 0x00, 0x00 ],
+  [ 0x02, 0x00, 0x00, 0x00 ],
+  [ 0x04, 0x00, 0x00, 0x00 ],
+  [ 0x08, 0x00, 0x00, 0x00 ],
+  [ 0x10, 0x00, 0x00, 0x00 ],
+  [ 0x20, 0x00, 0x00, 0x00 ],
+  [ 0x40, 0x00, 0x00, 0x00 ],
+  [ 0x80, 0x00, 0x00, 0x00 ],
+  [ 0x1b, 0x00, 0x00, 0x00 ],
+  [ 0x36, 0x00, 0x00, 0x00 ],
+];
 
-const bytesToMatrix = (text:any) =>{
-  const blockLen = 4
-  let result:any[] = []
-  for (let i = 0; i<text.length; i+=blockLen){
-    result.push(text.slice(i,i+blockLen))
+const subBytes = (s:num[][], Nb:num) => {
+  for (let r of [...Array(Nb).keys()])
+    for (let c=0; c<Nb; c++) s[r][c] = sBox[s[r][c]];
+  return s;
+}
+const invSubBytes = (s:num[][], Nb:num) => {
+  for (let r of [...Array(Nb).keys()])
+    for (let c=0; c<Nb; c++) s[r][c] = invSbox[s[r][c]];
+  return s;
+}
+
+const shiftRows = (s:num[][], Nb:num) => {
+  const t = new Array(4);
+  for (let r=1; r<4; r++) {
+    s[r] = leftShift(s[r],r)
+  }
+  return s;  
+}
+const invShiftRows = (s:num[][], Nb:num) => {
+  const t = new Array(4);
+  for (let r=1; r<4; r++) {
+    s[r] = rightShift(s[r],r)
+  }
+  return s;  
+}
+
+const mixColumns = (s:num[][], Nb:num) =>{
+  for(let i of [...Array(Nb).keys()]){
+    const s0 = mulBy02(s[0][i])^mulBy03(s[1][i])^s[2][i]^s[3][i]
+    const s1 = s[0][i]^mulBy02(s[1][i])^mulBy03(s[2][i])^s[3][i]
+    const s2 = s[0][i]^s[1][i]^mulBy02(s[2][i])^mulBy03(s[3][i])
+    const s3 = mulBy03(s[0][i])^s[1][i]^s[2][i]^mulBy02(s[3][i])
+    s[0][i] = s0
+    s[1][i] = s1
+    s[2][i] = s2
+    s[3][i] = s3
+  }
+  return s
+}
+const invMixColumns = (s:num[][], Nb:num) =>{
+  for(let i of [...Array(Nb).keys()]){
+    const s0 = mulBy0e(s[0][i])^mulBy0b(s[1][i])^mulBy0d(s[2][i])^mulBy09(s[3][i])
+    const s1 = mulBy09(s[0][i])^mulBy0e(s[1][i])^mulBy0b(s[2][i])^mulBy0d(s[3][i])
+    const s2 = mulBy0d(s[0][i])^mulBy09(s[1][i])^mulBy0e(s[2][i])^mulBy0b(s[3][i])
+    const s3 = mulBy0b(s[0][i])^mulBy0d(s[1][i])^mulBy09(s[2][i])^mulBy0e(s[3][i])
+    s[0][i] = s0
+    s[1][i] = s1
+    s[2][i] = s2
+    s[3][i] = s3
+  }
+  return s
+}
+
+const addRoundKey = (s:num[][], w:num[][], rnd:num, Nb:num) => {
+  for (let r of [...Array(Nb).keys()]) {
+      for (let c=0; c<Nb; c++) s[r][c] ^= w[rnd*4+c][r];
+  }
+  return s;
+}
+
+const subWord = (w:num[]) => {
+  for (let i of [...Array(4).keys()]) w[i] = sBox[w[i]];
+  return w;
+}
+
+const rotWord = (w:num[]) => {
+  const tmp = w[0];
+  for (let i of [...Array(3).keys()]) w[i] = w[i+1];
+  w[3] = tmp;
+  return w;
+}
+
+const keyExpansion = (key:num[]) => {
+  const Nb = 4;            // block size (in words): no of columns in state (fixed at 4 for AES)
+  const Nk = key.length/4; // key length (in words): 4/6/8 for 128/192/256-bit keys
+  const Nr = Nk + 6;       // no of rounds: 10/12/14 for 128/192/256-bit keys
+
+  const w = new Array(Nb*(Nr+1));
+  let temp = new Array(4);
+
+  // initialise first Nk words of expanded key with cipher key
+  for (let i of [...Array(Nk).keys()]) {
+      const r = [ key[4*i], key[4*i+1], key[4*i+2], key[4*i+3] ];
+      w[i] = r;
+  }
+
+  // expand the key into the remainder of the schedule
+  for (let i=Nk; i<(Nb*(Nr+1)); i++) {
+      w[i] = new Array(4);
+      for (let t of [...Array(4).keys()]) temp[t] = w[i-1][t];
+      // each Nk'th word has extra transformation
+      if (i % Nk == 0) {
+          temp = subWord(rotWord(temp));
+          for (let t of [...Array(4).keys()]) temp[t] ^= rCon[i/Nk][t];
+      }
+      // 256-bit key has subWord applied every 4th word
+      else if (Nk > 6 && i%Nk == 4) {
+          temp = subWord(temp);
+      }
+      // xor w[i] with w[i-1] and w[i-Nk]
+      for (let t of [...Array(4).keys()]) w[i][t] = w[i-Nk][t] ^ temp[t];
+  }
+
+  return w;
+}
+
+
+
+const encryptBlock = (input:num[], w:num[][]):num[] => {
+  const Nb = 4;               // block size (in words): no of columns in state (fixed at 4 for AES)
+  const Nr = w.length/Nb - 1; // no of rounds: 10/12/14 for 128/192/256-bit keys
+
+  let state:num[][] = [ [], [], [], [] ];  // initialise 4×Nb byte-array 'state' with input [§3.4]
+  for (let i=0; i<4*Nb; i++) state[i%4][Math.floor(i/4)] = input[i];
+
+  state = addRoundKey(state, w, 0, Nb);
+
+  for (let round=1; round<Nr; round++) {
+      state = subBytes(state, Nb);
+      state = shiftRows(state, Nb);
+      state = mixColumns(state, Nb);
+      state = addRoundKey(state, w, round, Nb);
+  }
+
+  state = subBytes(state, Nb);
+  state = shiftRows(state, Nb);
+  state = addRoundKey(state, w, Nr, Nb);
+
+  const output = new Array(4*Nb);  // convert state to 1-d array before returning [§3.4]
+  for (let i=0; i<4*Nb; i++) output[i] = state[i%4][Math.floor(i/4)];
+
+  return output;
+}
+
+const decryptBlock = (input:num[], w:num[][]) =>{
+  const Nb = 4;               // block size (in words): no of columns in state (fixed at 4 for AES)
+  const Nr = w.length/Nb - 1; // no of rounds: 10/12/14 for 128/192/256-bit keys
+
+  let state:num[][] = [ [], [], [], [] ];  // initialise 4×Nb byte-array 'state' with input [§3.4]
+  for (let i=0; i<4*Nb; i++) state[i%4][Math.floor(i/4)] = input[i];
+  let round=Nr-1
+
+  state = addRoundKey(state, w, Nr, Nb);
+
+  while(round >= 1) {
+    state = invShiftRows(state, Nb); 
+    state = invSubBytes(state, Nb);
+    state = addRoundKey(state, w, round, Nb);
+    state = invMixColumns(state, Nb);
+    --round
+  }
+  state = invSubBytes(state, Nb);
+  state = invShiftRows(state, Nb);
+  state = addRoundKey(state, w, 0, Nb);
+
+  const output = new Array(4*Nb);  // convert state to 1-d array before returning [§3.4]
+  for (let i=0; i<4*Nb; i++) output[i] = state[i%4][Math.floor(i/4)];
+
+  return output;
+}
+
+const encryptCBC = (input:num[],password:num[],iv:num[]) =>{
+  assert.deepEqual(iv.length,16)
+
+  input = addPad(input)
+
+  let cryptoBlocks:num[][] = []
+  let prev:num[] = iv
+
+  const plainBlocks:num[][] = Array(Math.ceil(input.length/16)).fill(input).map((item,i) =>{return input.slice(i*16, i * 16 + 16)})
+
+  const key = keyExpansion(password)
+
+  for (let block of plainBlocks){
+    cryptoBlocks.push(encryptBlock(xorMass(block, prev),key))
+    prev = block
   }
     
-
-  return result
+  return cryptoBlocks.reduce((a,b) =>{return [...a,...b]})
 }
 
-const matrixToBytes = (matrix:any[]) =>{
-  return (matrix.reduce((a,b) =>{
-    return [...a, ...b]
-  }))
-}
+const decryptCBC = (input:num[],password:num[],iv:num[]) =>{
+  assert.deepEqual(iv.length,16)
 
-const xorBytes = (a:any[], b:any[]) =>{
-  let result = []
-  for (let i =0; i< a.length; i++){
-    result.push(a[i] ^ b[i])
+  let cryptoBlocks:num[][] = []
+  let prev:num[] = iv
+
+  const plainBlocks:num[][] = Array(Math.ceil(input.length/16)).fill(input).map((item,i) =>{return input.slice(i*16, i * 16 + 16)})
+
+  const key = keyExpansion(password)
+
+  for (let block of plainBlocks){
+    cryptoBlocks.push(xorMass(decryptBlock(block, key),prev))
+    prev = xorMass(decryptBlock(block, key),prev)
   }
-  return result
+    
+  return cryptoBlocks.reduce((a,b) =>{return [...a,...b]})
 }
 
-const incBytes = (a:any[]) =>{
-  let out:any[] = JSON.parse(JSON.stringify(a))
-  for (let i = out.length-1; i>-1; i--){
-    if (out[i] == 0xFF)
-      out[i] = 0
-    else{
-      out[i] += 1
-      break
-    }
-  }
-  return out
+const enc = (plainText:str, key:str) =>{
+  const utfText = toUTF8(plainText)
+  const keyBuf = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(0,16)
+
+  const iv = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(16,32)
+
+  const cipher = encryptCBC(utfText,keyBuf,iv).map(item => item.toString(16))
+
+  return cipher
 }
 
-const pad = (plainText:any) =>{
-  let paddingLen = 16 - (plainText.length % 16)
-  let padding = new Array(paddingLen).fill(paddingLen,0,paddingLen)
-  return plainText.concat(padding)
+const dec = (cryptoMassive:str[],key:str) =>{
+  const numText:num[] = cryptoMassive.map(i => parseInt(i,16))
+  const keyBuf = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(0,16)
+
+  const iv = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(16,32)
+
+  const plainText = decryptCBC(numText,keyBuf,iv)
+
+  return fromUTF8(plainText).slice(0, -4)
 }
 
-const unpad = (plainText:any[]) =>{
-  let paddingLen = plainText[plainText.length-1]
-  assert.ok(paddingLen > 0)
-  plainText.length = plainText.length - paddingLen
-  return plainText
-}
-
-const splitBlocks = (message:any[], blockSize:num = 16, requirePadding:boolean) =>{
-  if (requirePadding){
-    message = pad(message)
-  }
-  return Array(Math.ceil(message.length/blockSize)).fill(message).map((item, i) => message.slice(i*blockSize, i * blockSize + blockSize))
-}
-
-
-const _expandKey = (masterKey:any[], nRounds:num) =>{
-  let keyColumns = bytesToMatrix(masterKey)
-  let iterationSize = ~~(masterKey.length/4)
-
-  const w = new Array(4 * (nRounds + 1))
-  let temp = new Array(4)
-
-  for (let i=0; i < iterationSize; i++){
-    const r = [masterKey[4*i], masterKey[4*i+1], masterKey[4*i+2], masterKey[4*i+3]]
-    w[i] = r
-  }
-
-  for (let i=iterationSize; i<(4 * (nRounds + 1));i++){
-    w[i] = new Array(4)
-    for (let t=0; t<4; t++) temp[t] = w[i-1][t]
-
-    if(i % iterationSize == 0){
-      temp = subWord(rotWord(temp));
-      for (let t=0; t<4; t++) temp[t] ^= rCon[i/iterationSize][t];
-    }
-    else if (iterationSize > 6 && i%iterationSize == 4) {
-      temp = subWord(temp);
-    }
-
-    for (let t=0; t<4; t++) w[i][t] = w[i-iterationSize][t] ^ temp[t];
-  }
-
-  return w
-}
-
-const initialValues = (masterKey:any[]) =>{
-  const roundsByKeySize = [[16,10],[24,12],[32,14]]
-  const nRounds = roundsByKeySize.filter(item => item[0] === masterKey.length)[0][1]
-  const keyMatrices = _expandKey(masterKey,nRounds)
-
-  return {keyMatrices:keyMatrices, nRounds:nRounds}
-}
-
-const encryptBlock = (plainText:any[], keyMatrices:any[], nRounds:num) =>{
-  assert.deepEqual(plainText.length,16)
-
-  let plainState = bytesToMatrix(plainText)
-
-  addRoundKey(plainState, keyMatrices[0])
-
-  for (let i = 0; i < nRounds; i++){
-    subBytes(plainState)
-    shiftRows(plainState)
-    mixColumns(plainState)
-    addRoundKey(plainState, keyMatrices[i])
-  }
-  subBytes(plainState)
-  shiftRows(plainState)
-  addRoundKey(plainState,keyMatrices[keyMatrices.length - 1])
-
-  return matrixToBytes(plainState)
-}
-
-const plainText = [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF]
+const plainText = [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF,0xFF]
 const key = [0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f]
+const iv = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
-/* console.log(_expandKey([0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f], 10)) */
+/* let result = encryptBlock(plainText,keyExpansion(key))
 
-/* const plainText = [0x32,0x43,0xF6,0xA8,0x88,0x5A,0x30,0x8D,0x31,0x31,0x98,0xA2,0xE0,0x37,0x07,0x34]
-const key = [0x2B,0x7E,0x15,0x16,0x28,0xAE,0xD2,0xA6,0xAB,0xF7,0x15,0x88,0x09,0xCF,0x4F,0x3C]
+console.log(result)
 
-const generatedKey = initialValues(key)
+result = decryptBlock(result,keyExpansion(key)) */
 
-let result:any[] = encryptBlock(plainText,generatedKey.keyMatrices,generatedKey.nRounds)
+/* result = result.map(i =>{
+  return i.toString(16)
+}) */
 
-let hex = result.map(i =>{return i.toString(16)})
+/* console.log(result) */
 
-console.log(hex) */
+const Main = () =>{
+  const getKeyIV = () =>{
 
-_expandKey([0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF], 10)
+  }
+}
+
+console.log(enc(TEXT1000VAR1, 'Пока'))
+
+console.log(dec(enc(TEXT1000VAR1, 'Пока'),'Пока'))

@@ -1,4 +1,6 @@
-export const toBinary = (plain:string) =>{ //Перевод текста в двоичный формат UTF-8
+import { num, str } from "../types"
+
+export const toBinary = (plain:str) =>{ //Перевод текста в двоичный формат UTF-8
   const encoder = new TextEncoder()
   const view = encoder.encode(plain)
   let bytesTemp = []
@@ -34,4 +36,16 @@ export const binToStr = (bits:any) =>{ //Перевод двоичной пос�
 
   let uMassive = Uint8Array.from(massive)
   return decoder.decode(uMassive)
+}
+
+export const toUTF8 = (plainText:str) =>{
+  const encoder = new TextEncoder()
+
+  return Array.from(encoder.encode(plainText))
+}
+
+export const fromUTF8 = (array:num[]) =>{
+  const decoder = new TextDecoder()
+
+  return decoder.decode(Uint8Array.from(array))
 }
