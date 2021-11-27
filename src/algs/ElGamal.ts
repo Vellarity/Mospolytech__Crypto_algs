@@ -1,11 +1,11 @@
 import { isSimple, power, isCompire, getRandomArbitrary } from "../helper/helper";
 import { bint, num, NB, BN } from "../types";
-import colors from 'colors'
+import colors, { green } from 'colors'
 import { numsToText, textToNums } from "../helper/text";
 import { ALPHABET, ALPHABETDOTS, BIGTEXTVAR1, BIGTEXTVAR10, TEXT1000VAR1 } from "../helper/globals";
 import { inverseOf } from "../helper/math";
 
-process.on('error',err =>{
+process.on('exit',err =>{
   console.error(colors.red('EXIT_CODE:'), err)
 })
 
@@ -52,7 +52,8 @@ const enc = (indexes:num[], pubKey:PublicKey, ks?:bint[]) =>{
     */
     if (!ks){
       let k:bint = getRandomArbitrary(2, Number(pubKey.p)-2)
-      if (!isCompire(NB(k),NB(pubKey.p))) 
+      if (!isCompire(NB(k),NB(pubKey.p - 1n))) 
+        //* Проверка на взаимную простоту с функцией Эйлера. Если не соответствует, генерирует новое число
         return getRandomK()
       else return k
     }
@@ -81,7 +82,6 @@ const dec = (indexes:any[], privKey:PrivateKey) =>{
   indexes.forEach(item =>{
     let a:bint = item[0],b:bint = item[1]
     let index:any = Number((NB(inverseOf(a ** privKey.x, privKey.p)) * b) % privKey.p)
-    console.log((NB(inverseOf(a ** privKey.x, privKey.p)) * b)% privKey.p)
     const setIndex = (index:any):any =>{
       if (index < 0)
         return setIndex(index + Number(privKey.p))
@@ -94,19 +94,14 @@ const dec = (indexes:any[], privKey:PrivateKey) =>{
   return result
 }
 
-let pubKey:PublicKey =  /* initialValues(97n,ALPHABETDOTS.length, 83n,73n).pubKey */{
-  p:37n,
-  g:7n,
-  y:12n
-}
+let pubKey:PublicKey = initialValues(11n,ALPHABETDOTS.length, 7n,5n).pubKey
 
-let privKey:PrivateKey =           /* initialValues(97n,ALPHABETDOTS.length, 83n,73n).privKey */{
-  x:11n,
-  p:37n
-}
+let privKey:PrivateKey = initialValues(11n,ALPHABETDOTS.length, 7n,5n).privKey
+
+console.log(pubKey, privKey)
 
 console.log(enc(textToNums(TEXT1000VAR1, ALPHABETDOTS), pubKey))
 
 let result = dec(enc(textToNums(TEXT1000VAR1, ALPHABETDOTS), pubKey),privKey)
 
-console.log(numsToText(result, ALPHABETDOTS))
+console.log(colors.green(numsToText(result, ALPHABETDOTS)))

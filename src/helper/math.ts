@@ -4,9 +4,8 @@ import assert from "assert"
 import { error } from "console"
 import { bignumber } from "mathjs";
 import { bint, num, NB, BN } from "../types"
-const math = require('mathjs')
 
-export const extendEuclideanAlg = (a:bint, b:bint) =>{
+export const extendEuclid = (a:bint, b:bint) =>{
   /* 
    * Возвращает кортеж из трёх элементов (gcd, x, y), такой, что
    * a * x + b * y == gcd, где gcd - наибольший
@@ -15,14 +14,6 @@ export const extendEuclideanAlg = (a:bint, b:bint) =>{
    * В этой функции реализуется расширенный алгоритм
    * Евклида и в худшем случае она выполняется O(log b).
   */
-
-  let gcd:any,x:any,y:any
-  [gcd,x,y] = math.xgcd(math.bignumber(a.toString()),math.bignumber(b.toString()))
-
-  return [BN(gcd.value), BN(x.value), BN(y.value)]
-}
-
-export const extendEuclid = (a:bint, b:bint) =>{
   let xgcd:bint[]
 
   if (b === 0n) {
@@ -60,5 +51,3 @@ export const inverseOf = (n:bint, p:bint) =>{
   else
     return NB(x) % NB(p)
 }
-
-console.log(extendEuclid(99n,78n))
