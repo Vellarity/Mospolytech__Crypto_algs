@@ -58,10 +58,10 @@ const checkECP = (plainHash:num, ecp:bint) =>{
 
 const Main = (text:str, alphabet:str, init:{p:bint,q:bint,e:bint}) =>{
   const keys = initValues(init.p, init.q, init.e)
-  const plainNums = generateHash(textToNums(text, alphabet))
-  const ecp = generateECP(plainNums,keys.privKey)
+  const plainNum = generateHash(textToNums(text, alphabet))
+  const ecp = generateECP(plainNum,keys.privKey)
   const returned = returnECP(ecp,keys.pubKey)
-  const check = checkECP(plainNums,returned)
+  const check = checkECP(plainNum,returned)
 
   console.log(green(`Сгенерированная подпись: ${ecp}`))
   console.log(green(`Проверяем подпись: ${check}`))

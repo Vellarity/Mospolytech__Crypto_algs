@@ -10,7 +10,7 @@ export const PrepareText = (text:string, isDots: boolean) => {
 }
 
 export const getRandomArbitrary = (min:number, max:number):bint => {
-  return NB(Math.floor(Math.random() * (max - min) + min));
+    return NB(Math.floor(Math.random() * (max - min) + min));
 }
 
 export const power = (a:any,b:any,p:any) =>{
