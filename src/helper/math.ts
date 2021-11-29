@@ -51,3 +51,20 @@ export const inverseOf = (n:bint, p:bint) =>{
   else
     return NB(x) % NB(p)
 }
+
+export const getFactors = (a:bint, array:bint[], b:bint=2n) =>{
+  if (b > (a ** 2n)){
+    array.push(a)
+    return array
+  }
+  else if (a % b === 0n){
+    array.push(b)
+    getFactors(a / b, array, b)
+  }
+  else{
+    getFactors(a, array, b+1n)
+  }
+  return array
+}
+
+console.log(getFactors(2000n,[]))
