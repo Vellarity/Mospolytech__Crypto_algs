@@ -1,5 +1,5 @@
 import { red, green } from 'colors'
-import { ALPHABET, BIGTEXTVAR1 } from '../helper/globals'
+import { ALPHABET, ALPHABETDOTS, BIGTEXTVAR1, TEXT1000VAR1 } from '../helper/globals'
 import { generateHash } from '../helper/hash'
 import { getRandomArbitrary, isCompire } from '../helper/helper'
 import { getFactors } from '../helper/math'
@@ -37,7 +37,10 @@ const initValues = (openP:OpenParams, x:bint) =>{
 }
 
 const generateECP = (m:num,openP:OpenParams, privKey:bint) =>{
-  const p = openP.p, q = openP.q, a = openP.a, x = privKey
+  const p = openP.p, 
+        q = openP.q, 
+        a = openP.a, 
+        x = privKey
 
   if (NB(m) % q == 0n){
     m = 1
@@ -53,7 +56,8 @@ const generateECP = (m:num,openP:OpenParams, privKey:bint) =>{
   }
 
   const rk = generateR()
-  const r = rk.r, k = rk.k
+  const r = rk.r, 
+        k = rk.k
   const s = (x * r + k * NB(m)) % q
 
   return {r,s}
@@ -85,7 +89,9 @@ const Main = (text:str, alphabet:str, p:bint, q:bint, a:bint, x:bint) =>{
   const check = checkECP(hashNum, keys.openP, ecp.r, ecp.s, keys.pubKey)
 
   console.log(green(`Сгенерированная подпись: ${ecp.r} ${ecp.s}`))
-  console.log(green(`Проверяем подпись: ${check}`))
+  console.log(green(`Проверяем подпись: ${check} \n`))
 }
 
 Main(BIGTEXTVAR1, ALPHABET, 23n, 11n, 6n, 8n)
+
+Main(TEXT1000VAR1, ALPHABETDOTS, 23n, 11n, 6n, 8n)

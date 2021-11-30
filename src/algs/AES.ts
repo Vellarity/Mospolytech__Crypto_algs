@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { green } from 'colors';
 import { pbkdf2Sync, randomBytes } from 'crypto';
 import {mulBy02, mulBy03, mulBy09, mulBy0b, mulBy0d, mulBy0e, leftShift, rightShift, addPad, removePad, xorMass} from '../helper/AESfunc'
 import { fromUTF8, toUTF8 } from '../helper/binary';
@@ -278,28 +279,24 @@ const dec = (cryptoMassive:str[],key:str) =>{
   return fromUTF8(plainText).slice(0, -4)
 }
 
-const plainText = [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF,0xFF]
-const key = [0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f]
-const iv = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+const Main = (text:str, text1000:str, key:str) =>{
+  const plainBlock = [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF,0xFF]
+  const blockKey = [0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f]
 
-/* let result = encryptBlock(plainText,keyExpansion(key))
+  const standartResult = encryptBlock(plainBlock,keyExpansion(blockKey))
+  console.log(green(`Шифрование блока по стандарту: ${standartResult.map(i =>{return i.toString(16)}).join('')}`))
+  const standartDecrypt = decryptBlock(standartResult,keyExpansion(blockKey))
+  console.log(green(`Расшифрование блока по стандарту: ${standartDecrypt.map(i =>{return i.toString(16)}).join('')} \n`))
 
-console.log(result)
+  const textResult = enc(text, key)
+  console.log(green(`Шифрование пословицы по варианту: ${textResult.join('')}`))
+  const textDecrypt = dec(textResult,key)
+  console.log(green(`Расшифрование пословицы по варианту: ${textDecrypt} \n`))
 
-result = decryptBlock(result,keyExpansion(key)) */
-
-/* result = result.map(i =>{
-  return i.toString(16)
-}) */
-
-/* console.log(result) */
-
-const Main = () =>{
-  const getKeyIV = () =>{
-
-  }
+  const text1000Result = enc(text1000, key)
+  console.log(green(`Шифрование пословицы по варианту: ${text1000Result.join('')}`))
+  const text1000Decrypt = dec(text1000Result,key)
+  console.log(green(`Расшифрование пословицы по варианту: ${text1000Decrypt}`))
 }
 
-console.log(enc(TEXT1000VAR1, 'Пока'))
-
-console.log(dec(enc(TEXT1000VAR1, 'Пока'),'Пока'))
+Main(BIGTEXTVAR1, TEXT1000VAR1, 'AyoMate')
