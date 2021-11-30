@@ -22,7 +22,7 @@ const initValues = (openP:OpenParams, x:bint) =>{
     console.log(red('!!! Число q должно быть простым сомножителем p-1 !!!'))
     process.exit(1)
   }
-  if ((a * q) % p == 1n && 1n<a && a<(p-1n)){
+  if ((a ** q) % p != 1n && 1n<a && a<(p-1n)){
     console.log(red('!!! Число a не соответствует условиям !!!'))
     process.exit(1)
   }
