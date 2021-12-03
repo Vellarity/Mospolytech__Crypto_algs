@@ -1,9 +1,7 @@
-const colors = require('colors');
-
-import assert from "assert"
+import colors = require('colors');
+import assert = require("assert")
 import { error } from "console"
-import { bignumber } from "mathjs";
-import { bint, num, NB, BN } from "../types"
+import { bint, NB } from "../types"
 
 export const extendEuclid = (a:bint, b:bint) =>{
   /* 
@@ -66,5 +64,3 @@ export const getFactors = (a:bint, array:bint[], b:bint=2n) =>{
   }
   return array
 }
-
-console.log(getFactors(2000n,[]))

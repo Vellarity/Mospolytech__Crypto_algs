@@ -1,11 +1,12 @@
 import { ALPHABET } from "../helper/globals"
 
 import { getRandomArbitrary } from "../helper/helper"
+import { BN } from "../types"
 
 export const GenerateKey = (keyLen:number, alphabetLen:number) =>{
   let key:string[] = new Array(keyLen)
   for (let i=0; i<keyLen; i++){
-    let index:number = Math.ceil(getRandomArbitrary(0,alphabetLen))
+    let index:number = Math.ceil(BN(getRandomArbitrary(0,alphabetLen)))
     key[i] = ALPHABET.charAt(index)
   }
   return key

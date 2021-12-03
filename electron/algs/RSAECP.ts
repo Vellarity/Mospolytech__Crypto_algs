@@ -3,7 +3,7 @@ import { isCompire,isSimple } from "../helper/helper";
 import { inverseOf } from "../helper/math";
 import { red, green } from "colors";
 import { textToNums } from "../helper/text";
-import { ALPHABET, BIGTEXTVAR1 } from "../helper/globals";
+import { ALPHABET, ALPHABETDOTS, BIGTEXTVAR1, TEXT1000VAR1 } from "../helper/globals";
 import { generateHash } from "../helper/hash";
 
 process.on('exit',err =>{
@@ -41,6 +41,7 @@ const initValues = (p:bint, q:bint, e:bint) =>{
   const pubKey:PublicKey = {e,n}
   const privKey:PrivateKey = {d,n}
 
+  console.log(pubKey, privKey)
   return {pubKey, privKey}
 }
 
@@ -67,4 +68,7 @@ const Main = (text:str, alphabet:str, init:{p:bint,q:bint,e:bint}) =>{
   console.log(green(`Проверяем подпись: ${check}`))
 }
 
-Main(BIGTEXTVAR1, ALPHABET, {p:3557n,q:2579n,e:17n})
+Main(BIGTEXTVAR1, ALPHABET, {p:17n,q:13n,e:7n})
+Main(TEXT1000VAR1, ALPHABETDOTS, {p:17n,q:13n,e:7n})
+
+

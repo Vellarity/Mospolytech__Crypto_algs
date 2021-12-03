@@ -1,6 +1,6 @@
 import { isSimple, power, isCompire, getRandomArbitrary } from "../helper/helper";
 import { bint, num, NB, BN } from "../types";
-import colors, { green } from 'colors'
+import * as colors from 'colors'
 import { numsToText, textToNums } from "../helper/text";
 import { ALPHABET, ALPHABETDOTS, BIGTEXTVAR1, BIGTEXTVAR10, TEXT1000VAR1 } from "../helper/globals";
 import { inverseOf } from "../helper/math";
@@ -94,14 +94,14 @@ const dec = (indexes:any[], privKey:PrivateKey) =>{
   return result
 }
 
-let pubKey:PublicKey = initialValues(11n,ALPHABETDOTS.length, 7n,5n).pubKey
+let pubKey:PublicKey = initialValues(43n,ALPHABET.length, 7n,5n).pubKey
 
-let privKey:PrivateKey = initialValues(11n,ALPHABETDOTS.length, 7n,5n).privKey
+let privKey:PrivateKey = initialValues(43n,ALPHABET.length, 7n,5n).privKey
 
 console.log(pubKey, privKey)
 
-console.log(enc(textToNums(TEXT1000VAR1, ALPHABETDOTS), pubKey))
+console.log(enc(textToNums(BIGTEXTVAR1, ALPHABET), pubKey))
 
-let result = dec(enc(textToNums(TEXT1000VAR1, ALPHABETDOTS), pubKey),privKey)
+let result = dec(enc(textToNums(BIGTEXTVAR1, ALPHABET), pubKey),privKey)
 
-console.log(colors.green(numsToText(result, ALPHABETDOTS)))
+console.log(colors.green(numsToText(result, ALPHABET)))

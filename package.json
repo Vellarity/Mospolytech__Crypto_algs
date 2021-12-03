@@ -1,25 +1,56 @@
 {
-  "name": "cryptoscriptsts",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.ts",
-  "scripts": {
-    "start": "ts-node ./src/algs/diffie-hellman.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "name": "crypto-app-ts",
+  "version": "0.1.0",
+  "private": true,
+  "main": "build/electron/main.js",
   "devDependencies": {
-    "@types/node": "^16.11.1",
-    "nodemon": "^2.0.13",
-    "ts-node": "^10.3.0",
-    "typescript": "^4.4.4"
+    "@testing-library/jest-dom": "^5.15.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^12.20.37",
+    "@types/react": "^17.0.37",
+    "@types/react-dom": "^17.0.11"
   },
   "dependencies": {
     "colors": "^1.4.0",
-    "lodash": "^4.17.21",
-    "mathjs": "^10.0.0",
-    "node-gost-crypto": "^1.0.2"
+    "cross-env": "^7.0.3",
+    "electron": "^16.0.4",
+    "electron-builder": "^22.14.5",
+    "foreman": "^3.0.1",
+    "nodemon": "^2.0.15",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.5.2",
+    "web-vitals": "^1.1.2"
+  },
+  "scripts": {
+    "start": "nf start -p 3000",
+    "build": "react-scripts build",
+    "build-electron": "tsc --project electron/tsconfig.json",
+    "watch-electron": "tsc --project electron/tsconfig.json && electron .",
+    "start-react": "cross-env BROWSER=none react-scripts start",
+    "dist": "npm run build && npm run build-electron && electron-builder build -c.extraMetadata.main=build/electron/main.js",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

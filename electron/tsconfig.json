@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "commonJS",
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "outDir": "../build/electron",
+    "baseUrl": "."
+  },
+  "include": [
+    ".",
+    "../src/types"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

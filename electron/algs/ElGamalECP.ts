@@ -4,7 +4,7 @@ import { red, green } from 'colors'
 import { inverseOf } from "../helper/math";
 import { generateHash } from "../helper/hash";
 import { textToNums } from "../helper/text";
-import { ALPHABET, BIGTEXTVAR1 } from "../helper/globals";
+import { ALPHABET, ALPHABETDOTS, BIGTEXTVAR1, TEXT1000VAR1 } from "../helper/globals";
 
 process.on('exit',err =>{
   console.error(red('EXIT_CODE:'), err)
@@ -75,4 +75,6 @@ const Main = (P:bint, G:bint, X:bint, text:str, alphabet:str) =>{
   console.log(green(`Проверяем подпись: ${check}`))
 }
 
-Main(19n, 7n, 10n, BIGTEXTVAR1, ALPHABET)
+Main(17n, 7n, 10n, BIGTEXTVAR1, ALPHABET)
+
+Main(17n, 7n, 10n, TEXT1000VAR1, ALPHABETDOTS)
