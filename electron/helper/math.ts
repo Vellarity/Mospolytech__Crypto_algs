@@ -39,7 +39,7 @@ export const inverseOf = (n:bint, p:bint) =>{
   let gcd:any,x:any,y:any
   [gcd,x,y] = extendEuclid(n,p)
 
-  assert.deepEqual(NB(gcd), (NB(n) * NB(x) + NB(p) * NB(y)) % NB(p))
+  assert.strictEqual(NB(gcd), (NB(n) * NB(x) + NB(p) * NB(y)) % NB(p))
   if (gcd != 1n){
     
     //! Или n равно 0, или p не является простым 

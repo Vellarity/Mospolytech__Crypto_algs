@@ -35,7 +35,7 @@ const loadRegisters = (key:string) =>{
   }
 }
 
-const setKey = (key:string) => {
+export const setKey = (key:string) => {
   //Запускает функции установки регистров, если ключ удовлетворяет требованиям
 
   if (key.length === 64 && key.match(/^([01])+/)){
@@ -105,7 +105,7 @@ const getKeystream = (length:number) =>{
   return keyStream
 }
 
-const enc = (plain:string, key:boolean) =>{
+export const enc = (plain:string, key:boolean) =>{
   //Функция шифрования, получает на вход строку, конвертирует её, получает ключевой поток при помощи перечисленных выше функций и производит операцию XOR над элементами текста и ключевого потока
 
   let s:string = ''
@@ -122,7 +122,7 @@ const enc = (plain:string, key:boolean) =>{
   return s
 }
 
-const dec = (cipher:string, key:boolean) =>{
+export const dec = (cipher:string, key:boolean) =>{
   //Функция расшифрования, получает на вход двочиную строку шифра и ключ, получает ключевой поток на основе ключа, производит операцию XOR над элементами шифра и ключа. Результат конвертируется в UTF-8 строку
 
   let s = ""

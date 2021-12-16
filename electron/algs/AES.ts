@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { green } from 'colors';
 import { pbkdf2Sync } from 'crypto';
-import {mulBy02, mulBy03, mulBy09, mulBy0b, mulBy0d, mulBy0e, leftShift, rightShift, addPad, removePad, xorMass} from '../helper/AESfunc'
+import {mulBy02, mulBy03, mulBy09, mulBy0b, mulBy0d, mulBy0e, leftShift, rightShift, addPad, removePad, xorMass, makeCounter} from '../helper/AESfunc'
 import { fromUTF8, toUTF8 } from '../helper/binary';
 import { BIGTEXTVAR1, TEXT1000VAR1 } from '../helper/globals';
 import { num, str } from '../types.js';
@@ -164,8 +164,6 @@ const keyExpansion = (key:num[]) => {
   return w;
 }
 
-
-
 const encryptBlock = (input:num[], w:num[][]):num[] => {
   const Nb = 4;               // block size (in words): no of columns in state (fixed at 4 for AES)
   const Nr = w.length/Nb - 1; // no of rounds: 10/12/14 for 128/192/256-bit keys
@@ -257,27 +255,98 @@ const decryptCBC = (input:num[],password:num[],iv:num[]) =>{
   return cryptoBlocks.reduce((a,b) =>{return [...a,...b]})
 }
 
-const enc = (plainText:str, key:str) =>{
+const encryptCTR = (input:num[], password:num[], counter:num[][]) =>{
+  input = addPad(input)
+
+  let cryptoBlocks:num[][] = []
+  
+  const plainBlocks:num[][] = Array(Math.ceil(input.length/16)).fill(input).map((item,i) =>{return input.slice(i*16, i * 16 + 16)})
+
+  const key = keyExpansion(password)
+
+  plainBlocks.forEach((block, index) =>{
+    cryptoBlocks.push(xorMass(block, encryptBlock(counter[index],key)))
+  })
+
+  return cryptoBlocks.reduce((a,b) =>{return [...a,...b]})
+}
+
+const decryptCTR = (input:num[],password:num[], counter:num[][]) =>{
+  let cryptoBlocks:num[][] = []
+
+  const plainBlocks:num[][] = Array(Math.ceil(input.length/16)).fill(input).map((item,i) =>{return input.slice(i*16, i * 16 + 16)})
+
+  const key = keyExpansion(password)
+
+  plainBlocks.forEach((block, index) =>{
+    cryptoBlocks.push(xorMass(block, encryptBlock(counter[index],key)))
+  })
+
+  return cryptoBlocks.reduce((a,b) =>{return [...a,...b]})
+}
+
+const enc = (plainText:str, key:str, mode:'CBC'|'CTR') =>{
   const utfText = toUTF8(plainText)
   const keyBuf = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(0,16)
+  const cnt = utfText.length
 
-  const iv = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(16,32)
+  let cipher
 
-  const cipher = encryptCBC(utfText,keyBuf,iv).map(item => item.toString(16))
+  switch (mode) {
+    case 'CBC':
+      const iv = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(16,32)
+
+      cipher = encryptCBC(utfText,keyBuf,iv).map(item => item.toString(16))
+    break;
+  
+    case 'CTR':
+      const firstPartOfCounter = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(16,24)
+
+      let counter = makeCounter(cnt)
+
+      counter = counter.map(block =>{
+        return firstPartOfCounter.concat(block)
+      })
+
+      cipher = encryptCTR(utfText,keyBuf,counter).map(item => item.toString(16))
+    break;
+  }
 
   return cipher
 }
 
-const dec = (cryptoMassive:str[],key:str) =>{
+const dec = (cryptoMassive:str[],key:str, mode:'CBC'|'CTR') =>{
   const numText:num[] = cryptoMassive.map(i => parseInt(i,16))
   const keyBuf = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(0,16)
+  const cnt = numText.length
 
-  const iv = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(16,32)
+  let plainText
 
-  const plainText = decryptCBC(numText,keyBuf,iv)
+  switch (mode) {
+    case 'CBC':
+      const iv = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(16,32)
+      plainText = decryptCBC(numText,keyBuf,iv)
+    break;
+  
+    case 'CTR':
+      const firstPartOfCounter = Array.from(pbkdf2Sync(key,'salt',10000,32,'sha256')).splice(16,24)
 
-  return fromUTF8(plainText).slice(0, -4)
+      let counter = makeCounter(cnt)
+
+      counter = counter.map(block =>{
+        return firstPartOfCounter.concat(block)
+      })
+
+      plainText = decryptCTR(numText,keyBuf, counter)
+    break;
+  }
+
+  
+
+  return fromUTF8(removePad(plainText))
 }
+
+
 
 const Main = (text:str, text1000:str, key:str) =>{
   const plainBlock = [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF]
@@ -288,15 +357,36 @@ const Main = (text:str, text1000:str, key:str) =>{
   const standartDecrypt = decryptBlock(standartResult,keyExpansion(blockKey))
   console.log(green(`Расшифрование блока по стандарту: ${standartDecrypt.map(i =>{return i.toString(16)}).join('')} \n`))
 
-  const textResult = enc(text, key)
+
+
+
+
+
+  const textResult = enc(text, key, "CBC")
   console.log(green(`Шифрование пословицы по варианту: ${textResult.join('')}`))
-  const textDecrypt = dec(textResult,key)
+  const textDecrypt = dec(textResult,key, "CBC")
   console.log(green(`Расшифрование пословицы по варианту: ${textDecrypt} \n`))
 
-  const text1000Result = enc(text1000, key)
-  console.log(green(`Шифрование пословицы по варианту: ${text1000Result.join('')}`))
-  const text1000Decrypt = dec(text1000Result,key)
-  console.log(green(`Расшифрование пословицы по варианту: ${text1000Decrypt}`))
+  const text1000Result = enc(text1000, key, "CBC")
+  console.log(green(`Шифрование текста на 1000 символов: ${text1000Result.join('')}`))
+  const text1000Decrypt = dec(text1000Result,key, "CBC")
+  console.log(green(`Расшифрование текста на 1000 символов: ${text1000Decrypt} \n \n`))
+
+
+
+
+
+
+
+  const textCTRResult = enc(text, key, "CTR")
+  console.log(green(`Шифрование пословицы по варианту: ${textCTRResult.join('')}`))
+  const textCTRDecrypt = dec(textCTRResult,key, "CTR")
+  console.log(green(`Расшифрование пословицы по варианту: ${textCTRDecrypt} \n`))
+
+  const text1000CTRResult = enc(text1000, key, "CTR")
+  console.log(green(`Шифрование текста на 1000 символов: ${text1000CTRResult.join('')}`))
+  const text1000CTRDecrypt = dec(text1000CTRResult,key, "CTR")
+  console.log(green(`Расшифрование текста на 1000 символов: ${text1000CTRDecrypt}`))
 }
 
 Main(BIGTEXTVAR1, TEXT1000VAR1, 'AyoMate')

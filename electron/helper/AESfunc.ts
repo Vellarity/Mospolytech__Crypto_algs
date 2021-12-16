@@ -1,3 +1,4 @@
+import { isBlock } from "typescript"
 import { num } from "../types"
 
 export const mulBy02 = (n:num) => n&0x80 ? (n<<1) ^ 0x011b : n<<1
@@ -32,4 +33,31 @@ export const removePad = (input:num[]) =>{
 
 export const xorMass = (one:num[], two:num[]) =>{
   return one.map((item,index) =>{return item ^ two[index]})
+}
+
+export const makeCounter = (numOfCnt:num) =>{
+  let counter:num[][] = []
+
+  const rounds = Math.ceil(numOfCnt/256)
+
+  const lastRound = numOfCnt % 256
+
+  for (let i = 1; i <= rounds; i++){
+    if (i === rounds){
+      for (let j = 0; j < lastRound; j++){
+        let block:num[] = new Array(8).fill(0)
+        block[block.length - i] = j
+        counter.push(block)
+      }
+    }
+    else{
+      for (let j = 0; j < 256; j++){
+        let block:num[] = new Array(8).fill(0)
+        block[block.length - i] = j
+        counter.push(block)
+      }
+    }
+  }
+
+  return counter
 }
