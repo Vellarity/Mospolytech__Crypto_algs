@@ -359,9 +359,6 @@ const Main = (text:str, text1000:str, key:str) =>{
 
 
 
-
-
-
   const textResult = enc(text, key, "CBC")
   console.log(green(`Шифрование пословицы по варианту: ${textResult.join('')}`))
   const textDecrypt = dec(textResult,key, "CBC")
@@ -371,10 +368,6 @@ const Main = (text:str, text1000:str, key:str) =>{
   console.log(green(`Шифрование текста на 1000 символов: ${text1000Result.join('')}`))
   const text1000Decrypt = dec(text1000Result,key, "CBC")
   console.log(green(`Расшифрование текста на 1000 символов: ${text1000Decrypt} \n \n`))
-
-
-
-
 
 
 
