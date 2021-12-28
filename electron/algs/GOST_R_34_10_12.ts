@@ -5,7 +5,7 @@ import { generateHash } from "../helper/hash";
 import { textToNums } from "../helper/text";
 import { ALPHABET, BIGTEXTVAR1 } from "../helper/globals";
 
-function main(variables:any){
+function Main(variables:any){
   const ghostShell = new PythonShell('./electron/algs/GOST_R_34_10_12/gost.py')
 
   ghostShell.send(JSON.stringify(Object.assign({}, variables, {type:'sign'})))
@@ -54,6 +54,6 @@ let testVar = {
   q_y:'17614944419213781543809391949654080031942662045363639260709847859438286763994'
 }
 
-main(gostTest)
+Main(gostTest)
 
-main(testVar)
+Main(testVar)
